@@ -1,5 +1,3 @@
-import {config} from "dotenv";
-config();
 import {buildRouter} from "./routes";
 import express, {Express} from "express";
 import bodyParser from "body-parser";
