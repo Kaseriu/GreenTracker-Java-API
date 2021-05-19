@@ -5,6 +5,10 @@ import {State} from "../models";
 
 const stateRouter = express.Router();
 
+
+/** Récuperation de tout les states disponible
+ * getAllState()
+ **/
 stateRouter.get("/", async function (req, res) {
     const connection = await DatabaseUtils.getConnection();
     const stateController = new StateController(connection);
@@ -21,6 +25,9 @@ stateRouter.get("/", async function (req, res) {
     }
 });
 
+/**Recuperation des state par Id
+ * getStateById()
+ */
 stateRouter.get("/id", async function (req, res) {
     const connection = await DatabaseUtils.getConnection();
     const stateController = new StateController(connection);
@@ -40,6 +47,9 @@ stateRouter.get("/id", async function (req, res) {
     }
 });
 
+/**Recuperation des state par nom
+ * getStateByName()
+ */
 stateRouter.get("/name", async function (req, res) {
     const connection = await DatabaseUtils.getConnection();
     const stateController = new StateController(connection);
@@ -59,11 +69,16 @@ stateRouter.get("/name", async function (req, res) {
     }
 });
 
-
+/**Modification des state par nom
+ * updateByName()
+ */
 stateRouter.put("/", async function (req, res) {
 
 });
 
+/**Supression d'un state par nom
+ * deleteStateByName()
+ */
 stateRouter.delete("/", async function (req, res) {
     const stateName = req.body.stateName;
     if(stateName === undefined){
@@ -86,6 +101,9 @@ stateRouter.delete("/", async function (req, res) {
 
 });
 
+/**Creation d'un state par nom
+ * createStateByName()
+ */
 stateRouter.post("/", async function (req, res) {
     const connection = await DatabaseUtils.getConnection();
     const stateController = new StateController(connection);

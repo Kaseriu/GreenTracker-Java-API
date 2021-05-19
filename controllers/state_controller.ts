@@ -35,6 +35,10 @@ export class StateController {
         return [];
     }
 
+    /**
+     * Récupération d'un state depuis son id :
+     * @param stateId
+     */
     async getStateById(stateId: string): Promise<State | null>{
         const res = await this.connection.query(`SELECT id, name FROM state where id = '${stateId}'`);
         const data = res[0];
@@ -53,6 +57,10 @@ export class StateController {
         return null;
     }
 
+    /**
+     * Récupération d'un state depuis son name :
+     * @param stateName
+     */
     async getStateByName(stateName: string): Promise<State | null>{
         const res = await this.connection.query(`SELECT id,name FROM state where name = '${stateName}'`);
 
@@ -70,6 +78,10 @@ export class StateController {
         return null;
     }
 
+    /**
+     * Suppression d'un state depuis son name :
+     * @param stateName
+     */
     async deleteStateByName(stateName: string) : Promise<boolean | string>{
 
         if(await  this.getStateByName(stateName) === null){
@@ -82,6 +94,10 @@ export class StateController {
         return headers.affectedRows === 1;
     }
 
+    /**
+     * Création d'un state
+     * @param options
+     */
     async createName(options: IStateProps): Promise<State | null | string>{
         if (options.name === undefined) {
             return null;
