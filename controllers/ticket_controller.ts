@@ -15,13 +15,15 @@ export class TicketController {
 
     constructor(connection: Connection) {
         this.connection = connection;
+
     }
 
     async getAllTicket(options?: TicketAllOptions): Promise<Ticket[]> {
         const limit = options?.limit || 20;
         const offset = options?.offset || 0;
 
-        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state FROM ticket LIMIT ${offset}, ${limit}`);
+        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
+                                                 FROM ticket LIMIT ${offset}, ${limit}`);
         const data = res[0];
         if (Array.isArray(data)) {
             return (data as RowDataPacket[]).map(function (row: any) {
@@ -38,11 +40,13 @@ export class TicketController {
         return [];
     }
 
-    async getTicketById(id: number | undefined): Promise<Ticket|any> {
+    async getTicketById(id: number | undefined): Promise<Ticket | any> {
         /*if (id === undefined)
             return new LogError({numError:400,text:"There is no treatment id"});*/
 
-        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state FROM ticket where id = ${id}`);
+        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
+                                                 FROM ticket
+                                                 where id = ${id}`);
         const data = res[0];
         if (Array.isArray(data)) {
             const rows = data as RowDataPacket[];
@@ -61,11 +65,13 @@ export class TicketController {
         return [];
     }
 
-    async getTicketByUserId(UserId: number): Promise<Ticket|any> {
+    async getTicketByUserId(UserId: number): Promise<Ticket | any> {
         /*if (UserId === undefined)
             return new LogError({numError:400,text:"There is no user id"});*/
 
-        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state FROM ticket where id_user = ${UserId}`);
+        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
+                                                 FROM ticket
+                                                 where id_user = ${UserId}`);
         const data = res[0];
         if (Array.isArray(data)) {
             const rows = data as RowDataPacket[];
@@ -84,11 +90,13 @@ export class TicketController {
         return [];
     }
 
-    async getTicketByStateId(StateId: number): Promise<Ticket|any> {
+    async getTicketByStateId(StateId: number): Promise<Ticket | any> {
         /*if (StateId === undefined)
             return new LogError({numError:400,text:"There is no state id"});*/
 
-        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state FROM ticket where id_state = ${StateId}`);
+        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
+                                                 FROM ticket
+                                                 where id_state = ${StateId}`);
         const data = res[0];
         if (Array.isArray(data)) {
             const rows = data as RowDataPacket[];
@@ -106,38 +114,49 @@ export class TicketController {
         }
         return [];
     }
-    // @ts-ignore
-    async createTicket(options: ITicketProps): Promise<Ticket> {
-        try {
 
-            /*if (!await UserController.doesUserExist(options.id_user, this.connection))
-                return new LogError({numError:400,text:"The animal doesn't exist"});
-            if (!await StateController.doesStateTypeExist(options.id_state, this.connection))
-                new LogError({numError:400,text:"The treatment type doesn't exist"});*/
+    async createTicket(options: ITicketProps): Promise<Ticket | string | null> {
+        const user = new UserController(this.connection);
+        const state = new StateController(this.connection);
 
-            const res = await this.connection.execute("INSERT INTO ticket (id, name, description, assignee, id_user, id_state) VALUES (?,?,?,?,?,?)", [
-                options.id,
-                options.name,
-                options.description,
-                options.assignee,
-                options.id_user,
-                options.id_state
-            ]);
-            const headers = res[0] as ResultSetHeader;
-            if (headers.affectedRows === 1) {
-                return this.getTicketById(options.id);
-            }
-            //return new LogError({numError:400,text:"Couldn't create ticket"});
-        } catch (err) {
-            console.error(err);
-            //return new LogError({numError:400,text:"Couldn't create ticket"});
+        if (options.name === undefined || options.description === undefined || options.assignee === undefined) {
+            return null;
         }
 
+        if (options.id_user !== undefined && options.id_state !== undefined) {
+            if (!await user.getUserById(options.id_user.toString())) {
+                return "No user associate with this id";
+            }
+            if (!await state.getStateById(options.id_state.toString())) {
+                return "No state associate with this id";
+            }
+        }
+
+        const res = await this.connection.execute("INSERT INTO ticket (name, description, assignee, id_user, id_state) VALUES (?,?,?,?,?)", [
+            options.name,
+            options.description,
+            options.assignee,
+            options.id_user,
+            options.id_state
+        ]);
+        const headers = res[0] as ResultSetHeader;
+        if (headers.affectedRows === 1) {
+            return new Ticket({
+                name: options.name,
+                description: options.description,
+                assignee: options.assignee,
+                id_user: options.id_user,
+                id_state: options.id_state
+            });
+        }
+        return null;
     }
 
     async removeTicketById(id: number): Promise<boolean> {
         try {
-            const res = await this.connection.query(`DELETE FROM ticket where id  = ${id}`);
+            const res = await this.connection.query(`DELETE
+                                                     FROM ticket
+                                                     where id = ${id}`);
             const headers = res[0] as ResultSetHeader;
             return headers.affectedRows === 1;
         } catch (err) {
@@ -146,10 +165,9 @@ export class TicketController {
         }
     }
 
-    // @ts-ignore
-    async updateTicket(options: ITicketProps): Promise<Ticket> {
-
-
+    async updateTicket(options: ITicketProps): Promise<Ticket | string | null> {
+        const user = new UserController(this.connection);
+        const state = new StateController(this.connection);
         const setClause: string[] = [];
         const params = [];
 
@@ -162,35 +180,32 @@ export class TicketController {
             params.push(options.description);
         }
         if (options.assignee !== undefined) {
-            setClause.push("assignees = ?");
+            setClause.push("assignee = ?");
             params.push(options.assignee);
         }
         if (options.id_user !== undefined) {
-            /*if (!await UserController.doesUserExist(options.id_user, this.connection))
-                return new LogError({numError:400,text:"The user doesn't exist"});*/
+            if (!await user.getUserById(options.id_user.toString())) {
+                return "No user associate with this id";
+            }
             setClause.push("id_user = ?");
             params.push(options.id_user);
         }
         if (options.id_state !== undefined) {
-            /*if (!await StateController.doesStateExist(options.id_state, this.connection))
-                return new LogError({numError:400,text:"The state type doesn't exist"});*/
+            if (!await state.getStateById(options.id_state.toString())) {
+                return "No state associate with this id";
+            }
             setClause.push("id_state = ?");
             params.push(options.id_state);
         }
         params.push(options.id);
-        try {
-            const res = await this.connection.execute(`UPDATE ticket SET ${setClause.join(", ")} WHERE id = ?`, params);
-            const headers = res[0] as ResultSetHeader;
-            if (headers.affectedRows === 1) {
-                return this.getTicketById(options.id);
-            }
-            //return new LogError({numError:400,text:"The ticket update failed"});
-
-        } catch (err) {
-            console.error(err);
-            //return new LogError({numError:400,text:"The ticket update failed"});
+        const res = await this.connection.execute(`UPDATE ticket
+                                                   SET ${setClause.join(", ")}
+                                                   WHERE id = ?`, params);
+        const headers = res[0] as ResultSetHeader;
+        if (headers.affectedRows === 1) {
+            return this.getTicketById(options.id);
         }
-
+        return null;
     }
 }
 

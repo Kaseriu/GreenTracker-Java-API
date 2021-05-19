@@ -5,3 +5,4 @@ uploads/
 .serv.env
 SyllabusDuProjet.pdf
 .idea/*
+*.zip

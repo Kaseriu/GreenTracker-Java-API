@@ -114,7 +114,6 @@ ticketRouter.post("/add", async function (req, res) {
 
 
     const Ticket = await ticketController.createTicket({
-        id: 0,
         name: name,
         description: description,
         assignee: assignee,
