@@ -78,6 +78,25 @@ export class StateController {
         return null;
     }
 
+    async updateState(stateName: string, newName: string): Promise<State | null | string> {
+
+        if (newName !== undefined) {
+            if (newName === "") {
+                return "Name cannot be empty"
+            }
+        }
+
+        const res = await this.connection.execute(`UPDATE state
+                                                   SET name = '${newName}'
+                                                   WHERE name = '${stateName}'`);
+
+        const headers = res[0] as ResultSetHeader;
+        if (headers.affectedRows === 1) {
+            return this.getStateByName(newName);
+        }
+        return null;
+    }
+
     /**
      * Suppression d'un state depuis son name :
      * @param stateName

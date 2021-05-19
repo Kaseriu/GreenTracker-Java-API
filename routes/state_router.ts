@@ -1,7 +1,6 @@
 import express from "express";
 import {StateController} from "../controllers";
 import {DatabaseUtils} from "../database/database";
-import {State} from "../models";
 
 const stateRouter = express.Router();
 
@@ -73,7 +72,30 @@ stateRouter.get("/name", async function (req, res) {
  * updateByName()
  */
 stateRouter.put("/", async function (req, res) {
+    const stateName = req.body.stateName;
+    const newName = req.body.newName;
 
+    if (stateName === undefined || stateName === "") {
+        res.status(400).send("State name is missing");
+        return;
+    }
+    if (newName === undefined || newName == "") {
+        res.status(400).send("New name is missing");
+        return;
+    }
+    const connection = await DatabaseUtils.getConnection();
+    const stateController = new StateController(connection);
+    const state = await stateController.updateState(stateName, newName);
+    if (state === null) {
+        res.status(400).end();
+    } else {
+        if (typeof state === "string") {
+            res.status(404).send(state);
+            return;
+        }
+        res.json(state);
+    }
+    res.status(403).end();
 });
 
 /**Supression d'un state par nom
