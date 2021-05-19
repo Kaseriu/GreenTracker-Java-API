@@ -3,7 +3,8 @@ export interface IUserProps {
     id?: number,
     name?: string,
     email?: string,
-    password?: string
+    password?: string,
+    token?: string,
 }
 
 export class User implements IUserProps{
@@ -11,6 +12,7 @@ export class User implements IUserProps{
     name?: string;
     email?: string;
     password?: string;
+    token?: string;
 
 
     constructor(props: IUserProps) {
@@ -18,5 +20,6 @@ export class User implements IUserProps{
         this.name = props.name;
         this.email = props.email;
         this.password = props.password;
+        this.token = props.token;
     }
 }
