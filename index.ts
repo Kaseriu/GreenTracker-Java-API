@@ -1,11 +1,15 @@
-import {config} from "dotenv";
-config();
-import {DatabaseUtils} from "./database/database";
+import {buildRouter} from "./routes";
+import express, {Express} from "express";
+import bodyParser from "body-parser";
 
-async function test() {
-    const str = await DatabaseUtils.getConnection();
-    const test = await str.execute('SHOW TABLES');
-    console.log(test[0]);
-    console.log("test committttt");
-}
-test();
+const app: Express = express();
+
+app.use(bodyParser.json());
+
+//création des routes utilisables par l'application
+buildRouter(app);
+
+const port = process.env.PORT || 3003;
+app.listen(port, function () {
+    console.log(`Listening on ${port}...`);
+});

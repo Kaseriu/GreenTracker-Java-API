@@ -1,4 +1,5 @@
-import {Connection} from "mysql2";
+import {IStateProps, State} from "../models";
+import {Connection, ResultSetHeader, RowDataPacket} from "mysql2/promise";
 
 interface UserAllOptions {
     limit?: number;
@@ -12,4 +13,95 @@ export class StateController {
     constructor(connection: Connection) {
         this.connection = connection;
     }
-}
+
+    /** Récuperation de toutes les informations du state**/
+    async getAllState(options?: UserAllOptions) : Promise<State[]>{
+        const limit = options?.limit || 20;
+        const offset = options?.offset || 0;
+
+        const res = await this.connection.query(`SELECT * FROM state LIMIT ${offset}, ${limit}`);
+        const data = res[0];
+
+        if(Array.isArray(data)){
+            return (data as RowDataPacket[]).map(function (row: any){
+                return new State({
+                    id : Number.parseInt(row["id"]),
+                    name: row["name"]
+                })
+            });
+
+        }
+
+        return [];
+    }
+
+    async getStateById(stateId: string): Promise<State | null>{
+        const res = await this.connection.query(`SELECT id, name FROM state where id = '${stateId}'`);
+        const data = res[0];
+
+        if (Array.isArray(data)){
+            const rows = data as RowDataPacket[];
+            if(rows.length > 0){
+                const row = rows[0];
+                return new State({
+                    id: Number.parseInt(row["id"]),
+                    name : row["name"]
+                });
+
+            }
+        }
+        return null;
+    }
+
+    async getStateByName(stateName: string): Promise<State | null>{
+        const res = await this.connection.query(`SELECT id,name FROM state where name = '${stateName}'`);
+
+        const data = res[0];
+        if(Array.isArray(data)){
+            const rows = data as RowDataPacket[];
+            if(rows.length > 0){
+                const row = rows[0];
+                return new State({
+                    id : Number.parseInt(row["id"]),
+                    name: row["name"]
+                });
+            }
+        }
+        return null;
+    }
+
+    async deleteStateByName(stateName: string) : Promise<boolean | string>{
+
+        if(await  this.getStateByName(stateName) === null){
+            return "No state associated to this name";
+        }
+
+        const res = await this.connection.query(`DELETE FROM state WHERE name ='${stateName}'`)
+
+        const headers = res[0] as ResultSetHeader;
+        return headers.affectedRows === 1;
+    }
+
+    async createName(options: IStateProps): Promise<State | null | string>{
+        if (options.name === undefined) {
+            return null;
+        }
+        if (await this.getStateByName(options.name) !== null) {
+            return "This name alreasy exists !";
+        }
+        const res = await this.connection.execute(`INSERT INTO state (name)
+                                                   VALUES (?)`,
+            [
+                options.name,
+            ]);
+        const headers = res[0] as ResultSetHeader;
+        if (headers.affectedRows === 1) {
+            return this.getStateByName(options.name);
+        }
+        return null;
+    }
+
+    }
+
+
+
