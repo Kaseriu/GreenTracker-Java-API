@@ -89,15 +89,13 @@ stateRouter.delete("/", async function (req, res) {
 stateRouter.post("/", async function (req, res) {
     const connection = await DatabaseUtils.getConnection();
     const stateController = new StateController(connection);
-    const id = req.body.id;
     const name = req.body.name;
 
-    if (name === undefined || id === undefined) {
+    if (name === undefined) {
         res.status(400).send("All information must be provided").end();
         return;
     }
     const state = await stateController.createName({
-        id,
         name
     });
     if (state === null) {
@@ -107,7 +105,6 @@ stateRouter.post("/", async function (req, res) {
         return;
     } else {
         res.status(200).send({
-            id: state.id,
             name: state.name
         });
     }
