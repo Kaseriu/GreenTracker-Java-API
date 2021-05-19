@@ -1,10 +1,10 @@
 import {Express} from "express";
-import {userRouter} from "./user_route";
 import {stateRouter} from "./state_router";
+import {userRouter} from "./user_router";
 import {ticketRouter} from "./ticket_route";
 
 export function buildRouter(app: Express) {
-    app.use("/user", userRouter);
-    app.use("/state", stateRouter);
-    app.use("/ticket", ticketRouter);
+    app.use("/java-api/user", userRouter);
+    app.use("/java-api/state", stateRouter);
+    app.use("/java-api/ticket", ticketRouter);
 }
