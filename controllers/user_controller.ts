@@ -74,7 +74,7 @@ export class UserController {
      */
     async getUserByEmail(userEmail: string): Promise<User | null> {
         //récupération de l'utilisateur
-        const res = await this.connection.query(`SELECT id, name, email, password, token
+        const res = await this.connection.query(`SELECT id, name, email, password
                                                  FROM user
                                                  where email = '${userEmail}'`);
         const data = res[0];
@@ -87,7 +87,6 @@ export class UserController {
                     name: row["name"],
                     email: row["email"],
                     password: row["password"],
-                    token: row["token"]
                 });
             }
         }
@@ -183,65 +182,4 @@ export class UserController {
         const headers = res[0] as ResultSetHeader;
         return headers.affectedRows === 1;
     }
-
-    /**
-     * Création d'un user
-     * @param options
-     */
-    async createUser(options: IUserProps): Promise<User | null | string> {
-
-        if (options.name === undefined || options.email === undefined || options.password === undefined) {
-            return null;
-        }
-
-        if (!EmailValidator.validate(options.email)) {
-            return "Wrong email format"
-        }
-
-        const passwordHashed = await hash(options.password, 5);
-
-        if (await this.getUserByEmail(options.email) !== null) {
-            return "Their is already an user associated to this email";
-        }
-
-        const res = await this.connection.execute(`INSERT INTO user (name, email, password)
-                                                   VALUES (?, ?, ?)`,
-            [
-                options.name,
-                options.email,
-                passwordHashed
-            ]);
-        const headers = res[0] as ResultSetHeader;
-        if (headers.affectedRows === 1) {
-            return this.getUserByEmail(options.email);
-        }
-        return null;
-    }
-
-    // TODO user connection
-
-    // /**
-    //  * login de l'utilisateur via :
-    //  * @param email
-    //  * @param password
-    //  */
-    // public async login(email: string, password: string): Promise<SessionModel | null> {
-    //     //récupération d'un utilisateur correspondant au mail et au mot de passe renseigné
-    //     const user = await this.getUserByEmail(email);
-    //     if (user === null) {
-    //         return "Wrong email or password";
-    //     }
-    //     if (typeof user.password === "string" && await compare(password, user.password)) {
-    //         const token = await hash(Date.now() + email, 5);
-    //         try {
-    //             //création de la session
-    //             await this.sessionController.createSession(await this.sessionController.getMaxSessionId() + 1, token, user.userId ? user.userId : 0);
-    //             //récupération de la session ouverte ou null si la connexion a échoué
-    //             return await this.sessionController.getSessionByToken(token);
-    //         } catch (err) {
-    //             console.error(err);
-    //             return null;
-    //         }
-    //     }
-    // }
 }

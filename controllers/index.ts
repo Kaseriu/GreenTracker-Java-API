@@ -1,3 +1,5 @@
 export * from './user_controller'
 export * from './state_controller'
 export * from './ticket_controller'
+export * from './auth_controller'
+export * from './session_controller'
