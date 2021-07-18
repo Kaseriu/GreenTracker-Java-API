@@ -34,14 +34,14 @@ userRouter.get("/", async function (req, res) {
 
 /**
  * Récupération d'un utilisateur selon son id
- * URL : java-api/user/id
+ * URL : java-api/user/:id
  * Requête : GET
  */
-userRouter.get("/id", async function (req, res) {
+userRouter.get("/:id", async function (req, res) {
     if (await isUserConnected(req)) {
         const connection = await DatabaseUtils.getConnection();
         const userController = new UserController(connection);
-        const userId = req.body.userId;
+        const userId = req.params.id;
         if (userId === undefined || userId === "") {
             res.status(400).send('User Id is missing');
             return;
