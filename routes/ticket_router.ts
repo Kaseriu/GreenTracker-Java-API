@@ -33,15 +33,15 @@ ticketRouter.get("/", async function (req, res) {
 });
 
 /**
- * Récupération d'un ticket selon son id
- * URL : java-api/ticket/:id
+ * Récupération d'un ticket selon son name
+ * URL : java-api/ticket/:name
  * Requête : GET
  */
-ticketRouter.get("/:id", async function (req, res) {
+ticketRouter.get("/:name", async function (req, res) {
     if (await isUserConnected(req)) {
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
-        const ticket = await ticketController.getTicketById(Number.parseInt(req.params.id));
+        const ticket = await ticketController.getTicketByName(req.params.name);
         if (ticket === null) {
             res.status(404).end();
             return;

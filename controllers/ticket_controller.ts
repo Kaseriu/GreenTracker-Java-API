@@ -40,13 +40,13 @@ export class TicketController {
         return [];
     }
 
-    async getTicketById(id: number | undefined): Promise<Ticket | any> {
+    async getTicketByName(name: string | undefined): Promise<Ticket | any> {
         /*if (id === undefined)
             return new LogError({numError:400,text:"There is no treatment id"});*/
 
-        const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
+        const res = await this.connection.query(`SELECT id, ticket.name, description, assignee, id_user, id_state
                                                  FROM ticket
-                                                 where id = ${id}`);
+                                                 where ticket.name = "${name}"`);
         const data = res[0];
         if (Array.isArray(data)) {
             const rows = data as RowDataPacket[];
@@ -195,7 +195,7 @@ export class TicketController {
                                                    WHERE id = ?`, params);
         const headers = res[0] as ResultSetHeader;
         if (headers.affectedRows === 1) {
-            return this.getTicketById(options.id);
+            return this.getTicketByName(options.name);
         }
         return null;
     }
