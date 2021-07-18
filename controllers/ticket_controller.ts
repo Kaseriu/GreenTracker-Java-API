@@ -66,17 +66,12 @@ export class TicketController {
     }
 
     async getTicketByUserId(UserId: number): Promise<Ticket | any> {
-        /*if (UserId === undefined)
-            return new LogError({numError:400,text:"There is no user id"});*/
-
         const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
                                                  FROM ticket
                                                  where id_user = ${UserId}`);
         const data = res[0];
         if (Array.isArray(data)) {
-            const rows = data as RowDataPacket[];
-            if (rows.length > 0) {
-                const row = rows[0];
+            return (data as RowDataPacket[]).map(function (row: any) {
                 return new Ticket({
                     id: Number.parseInt(row["id"]),
                     name: row["name"],
@@ -85,15 +80,12 @@ export class TicketController {
                     id_user: row["id_user"],
                     id_state: row["id_state"]
                 });
-            }
+            });
         }
         return [];
     }
 
     async getTicketByStateId(StateId: number): Promise<Ticket | any> {
-        /*if (StateId === undefined)
-            return new LogError({numError:400,text:"There is no state id"});*/
-
         const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
                                                  FROM ticket
                                                  where id_state = ${StateId}`);
