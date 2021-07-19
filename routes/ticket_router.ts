@@ -99,28 +99,27 @@ ticketRouter.get("/state/:id", async function (req, res) {
 });
 
 /**
- * Modification d'un ticket selon son id
- * URL : java-api/ticket/:id
+ * Modification d'un ticket selon son name
+ * URL : java-api/ticket/:ticketName
  * Requête : PUT
  */
-ticketRouter.put("/:id", async function (req, res) {
+ticketRouter.put("/:ticketName", async function (req, res) {
     if (await isUserConnected(req)) {
-        const id = Number.parseInt(req.params.id);
+        const ticketName = req.params.ticketName;
         const name = req.body.name;
         const description = req.body.description;
         const assignee = req.body.assignee;
         const id_user = req.body.id_user;
         const id_state = req.body.id_state;
 
-        if (id === undefined) {
+        if (ticketName === undefined) {
             res.status(400).end("add id");
             return;
         }
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
 
-        const ticket = await ticketController.updateTicket({
-            id: id,
+        const ticket = await ticketController.updateTicket(ticketName, {
             name: name,
             description: description,
             assignee: assignee,

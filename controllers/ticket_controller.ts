@@ -157,7 +157,7 @@ export class TicketController {
         }
     }
 
-    async updateTicket(options: ITicketProps): Promise<Ticket | string | null> {
+    async updateTicket(ticketName: string, options: ITicketProps): Promise<Ticket | string | null> {
         const user = new UserController(this.connection);
         const state = new StateController(this.connection);
         const setClause: string[] = [];
@@ -189,13 +189,17 @@ export class TicketController {
             setClause.push("id_state = ?");
             params.push(options.id_state);
         }
-        params.push(options.id);
+        params.push(ticketName);
         const res = await this.connection.execute(`UPDATE ticket
                                                    SET ${setClause.join(", ")}
-                                                   WHERE id = ?`, params);
+                                                   WHERE name = ?`, params);
         const headers = res[0] as ResultSetHeader;
         if (headers.affectedRows === 1) {
-            return this.getTicketByName(options.name);
+            if (options.name !== undefined) {
+                return this.getTicketByName(options.name);
+            } else {
+                return this.getTicketByName(ticketName);
+            }
         }
         return null;
     }
