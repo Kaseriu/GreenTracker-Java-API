@@ -62,7 +62,7 @@ export class TicketController {
                 });
             }
         }
-        return [];
+        return null;
     }
 
     async getTicketByUserId(UserId: number): Promise<Ticket | any> {
