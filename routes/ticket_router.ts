@@ -140,15 +140,15 @@ ticketRouter.put("/:ticketName", async function (req, res) {
 });
 
 /**
- * Supression d'un ticket selon son id
- * URL : java-api/ticket/:id
+ * Supression d'un ticket selon son name
+ * URL : java-api/ticket/:name
  * Requête : DELETE
  */
-ticketRouter.delete("/:id", async function (req, res) {
+ticketRouter.delete("/:name", async function (req, res) {
     if (await isUserConnected(req)) {
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
-        const success = await ticketController.removeTicketById(Number.parseInt(req.params.id));
+        const success = await ticketController.removeTicket(req.params.name);
         if (success) {
             res.status(204).end();
             return;

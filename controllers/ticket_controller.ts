@@ -144,11 +144,11 @@ export class TicketController {
         return null;
     }
 
-    async removeTicketById(id: number): Promise<boolean> {
+    async removeTicket(name: string): Promise<boolean> {
         try {
             const res = await this.connection.query(`DELETE
                                                      FROM ticket
-                                                     where id = ${id}`);
+                                                     where ticket.name = "${name}"`);
             const headers = res[0] as ResultSetHeader;
             return headers.affectedRows === 1;
         } catch (err) {
