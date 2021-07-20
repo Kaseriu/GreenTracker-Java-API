@@ -163,31 +163,34 @@ export class TicketController {
         const setClause: string[] = [];
         const params = [];
 
-        if (options.name !== undefined) {
+        if (options.name !== undefined && options.name !== "") {
             setClause.push("name = ?");
             params.push(options.name);
         }
-        if (options.description !== undefined) {
+        if (options.description !== undefined && options.description !== "") {
             setClause.push("description = ?");
             params.push(options.description);
         }
-        if (options.assignee !== undefined) {
+        if (options.assignee !== undefined && options.assignee !== null) {
             setClause.push("assignee = ?");
             params.push(options.assignee);
         }
-        if (options.id_user !== undefined) {
+        if (options.id_user !== undefined && options.id_user !== null) {
             if (!await user.getUserById(options.id_user.toString())) {
-                return "No user associate with this id";
+                return "L'user " + options.id_user + " n'existe pas !";
             }
             setClause.push("id_user = ?");
             params.push(options.id_user);
         }
-        if (options.id_state !== undefined) {
+        if (options.id_state !== undefined && options.id_state !== null) {
             if (!await state.getStateById(options.id_state.toString())) {
-                return "No state associate with this id";
+                return "La state " + options.id_state + " n'existe pas";
             }
             setClause.push("id_state = ?");
             params.push(options.id_state);
+        }
+        if (params.length === 0) {
+            return "Vous devez au moins renseigner un champs";
         }
         params.push(ticketName);
         const res = await this.connection.execute(`UPDATE ticket

@@ -65,14 +65,14 @@ stateRouter.get("/id", async function (req, res) {
 
 /**
  * Recuperation des state par nom
- * URL : java-api/state/name
+ * URL : java-api/state/:name
  * Requête : GET
  */
-stateRouter.get("/name", async function (req, res) {
+stateRouter.get("/:name", async function (req, res) {
     if (await isUserConnected(req)) {
         const connection = await DatabaseUtils.getConnection();
         const stateController = new StateController(connection);
-        const stateName = req.body.stateName;
+        const stateName = req.params.name;
         if (stateName === undefined || stateName === "") {
             res.status(400).send('State name is missing !');
             return;
@@ -95,20 +95,16 @@ stateRouter.get("/name", async function (req, res) {
 
 /**
  * Modification des state par nom
- * URL : java-api/state/
+ * URL : java-api/state/:stateName
  * Requête : PUT
  */
-stateRouter.put("/", async function (req, res) {
+stateRouter.put("/:stateName", async function (req, res) {
     if (await isUserConnected(req)) {
-        const stateName = req.body.stateName;
+        const stateName = req.params.stateName;
         const newName = req.body.newName;
 
-        if (stateName === undefined || stateName === "") {
-            res.status(400).send("State name is missing");
-            return;
-        }
         if (newName === undefined || newName == "") {
-            res.status(400).send("New name is missing");
+            res.status(400).send("Vous devez renseigner le nouveau nom !");
             return;
         }
         const connection = await DatabaseUtils.getConnection();
@@ -132,12 +128,12 @@ stateRouter.put("/", async function (req, res) {
 
 /**
  * Supression d'un state par nom
- * URL : java-api/state/
+ * URL : java-api/state/:name
  * Requête : DELETE
  */
-stateRouter.delete("/", async function (req, res) {
+stateRouter.delete("/:name", async function (req, res) {
     if (await isUserConnected(req)) {
-        const stateName = req.body.stateName;
+        const stateName = req.params.name;
         if (stateName === undefined) {
             res.status(400).send("Name missing");
             return;
@@ -163,8 +159,8 @@ stateRouter.delete("/", async function (req, res) {
 });
 
 /**
- * Création d'un state par nom
- * URL : java-api/state/
+ * Création d'une state par nom
+ * URL : java-api/state
  * Requête : POST
  */
 stateRouter.post("/", async function (req, res) {
@@ -177,7 +173,7 @@ stateRouter.post("/", async function (req, res) {
             res.status(400).send("All information must be provided").end();
             return;
         }
-        const state = await stateController.createName({
+        const state = await stateController.createState({
             name
         });
         if (state === null) {

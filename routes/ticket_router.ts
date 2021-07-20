@@ -112,10 +112,6 @@ ticketRouter.put("/:ticketName", async function (req, res) {
         const id_user = req.body.id_user;
         const id_state = req.body.id_state;
 
-        if (ticketName === undefined) {
-            res.status(400).end("add id");
-            return;
-        }
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
 
@@ -128,6 +124,9 @@ ticketRouter.put("/:ticketName", async function (req, res) {
         });
         if (ticket === null) {
             res.status(404).end();
+            return;
+        } else if (typeof ticket === "string") {
+            res.status(400).send(ticket);
             return;
         } else {
             res.status(200).end();
