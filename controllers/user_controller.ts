@@ -47,7 +47,7 @@ export class UserController {
      * Récupération d'un utilisateur depuis son id :
      * @param userId
      */
-    async getUserById(userId: string): Promise<User | null> {
+    async getUserById(userId: number): Promise<User | null> {
         //récupération de l'utilisateur
         const res = await this.connection.query(`SELECT id, name, email, password
                                                  FROM user
@@ -77,6 +77,31 @@ export class UserController {
         const res = await this.connection.query(`SELECT id, name, email, password
                                                  FROM user
                                                  where email = '${userEmail}'`);
+        const data = res[0];
+        if (Array.isArray(data)) {
+            const rows = data as RowDataPacket[];
+            if (rows.length > 0) {
+                const row = rows[0];
+                return new User({
+                    id: Number.parseInt(row["id"]),
+                    name: row["name"],
+                    email: row["email"],
+                    password: row["password"],
+                });
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Récupération d'un utilisateur depuis son name :
+     * @param userName
+     */
+    async getUserByName(userName: string): Promise<User | null> {
+        //récupération de l'utilisateur
+        const res = await this.connection.query(`SELECT id, name, email, password
+                                                 FROM user
+                                                 where name = '${userName}'`);
         const data = res[0];
         if (Array.isArray(data)) {
             const rows = data as RowDataPacket[];

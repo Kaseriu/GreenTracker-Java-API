@@ -40,10 +40,10 @@ export class StateController {
      * Récupération d'un state depuis son id :
      * @param stateId
      */
-    async getStateById(stateId: string): Promise<State | null> {
+    async getStateById(stateId: number): Promise<State | null> {
         const res = await this.connection.query(`SELECT id, name
                                                  FROM state
-                                                 where id = '${stateId}'`);
+                                                 where id = ${stateId}`);
         const data = res[0];
 
         if (Array.isArray(data)) {

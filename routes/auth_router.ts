@@ -52,15 +52,15 @@ auth_router.post("/subscribe", async function (req, res) {
 auth_router.post("/login", async function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
-    if (email === undefined || password === undefined) {
+    if (email === undefined || password === undefined && email === "" || password === "") {
         res.status(400).send("All information must be provided").end();
         return;
     }
     const connection = await DatabaseUtils.getConnection();
     const authController = new AuthController(connection);
     const session = await authController.login(email, password);
-    if (session === null) {
-        res.status(404).end();
+    if (typeof session === "string") {
+        res.status(400).send(session);
         return;
     } else {
         res.json(session);

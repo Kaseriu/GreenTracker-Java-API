@@ -111,17 +111,27 @@ export class TicketController {
         const user = new UserController(this.connection);
         const state = new StateController(this.connection);
 
-        if (options.name === undefined || options.description === undefined || options.assignee === undefined) {
-            return null;
+        if (options.name === undefined || options.description === undefined || options.assignee === undefined
+            && options.name === "" || options.description === "" || options.assignee === null) {
+            return "Tous les champs doivent être remplis !";
         }
 
-        if (options.id_user !== undefined && options.id_state !== undefined) {
-            if (!await user.getUserById(options.id_user.toString())) {
+        if (options.assignee !== undefined && await user.getUserById(options.assignee) === null) {
+            return "L'user " + options.assignee + " assigné à la tache n'existe pas !";
+        }
+
+        if (options.id_user !== undefined && options.id_state !== undefined
+            && options.id_user !== null && options.id_state !== null) {
+            if (!await user.getUserById(options.id_user) === null) {
                 return "No user associate with this id";
             }
-            if (!await state.getStateById(options.id_state.toString())) {
+            if (!await state.getStateById(options.id_state) === null) {
                 return "No state associate with this id";
             }
+        }
+
+        if (await this.getTicketByName(options.name) !== null) {
+            return "Un ticket portant ce nom existe déjà !";
         }
 
         const res = await this.connection.execute("INSERT INTO ticket (name, description, assignee, id_user, id_state) VALUES (?,?,?,?,?)", [
@@ -172,19 +182,22 @@ export class TicketController {
             params.push(options.description);
         }
         if (options.assignee !== undefined && options.assignee !== null) {
+            if (await user.getUserById(options.assignee) === null) {
+                return "L'user " + options.assignee + " n'existe pas !";
+            }
             setClause.push("assignee = ?");
             params.push(options.assignee);
         }
         if (options.id_user !== undefined && options.id_user !== null) {
-            if (!await user.getUserById(options.id_user.toString())) {
+            if (await user.getUserById(options.id_user) === null) {
                 return "L'user " + options.id_user + " n'existe pas !";
             }
             setClause.push("id_user = ?");
             params.push(options.id_user);
         }
         if (options.id_state !== undefined && options.id_state !== null) {
-            if (!await state.getStateById(options.id_state.toString())) {
-                return "La state " + options.id_state + " n'existe pas";
+            if (await state.getStateById(options.id_state) === null) {
+                return "La state " + options.id_state.toString() + " n'existe pas";
             }
             setClause.push("id_state = ?");
             params.push(options.id_state);

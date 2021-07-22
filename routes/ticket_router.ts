@@ -1,7 +1,8 @@
 import express from "express";
 import {DatabaseUtils} from "../database/database";
-import {TicketController} from "../controllers";
+import {StateController, TicketController, UserController} from "../controllers";
 import {isUserConnected} from "../middlewares/auth-middleware";
+import {State, User} from "../models";
 
 const ticketRouter = express.Router();
 
@@ -108,25 +109,41 @@ ticketRouter.put("/:ticketName", async function (req, res) {
         const ticketName = req.params.ticketName;
         const name = req.body.name;
         const description = req.body.description;
-        const assignee = req.body.assignee;
+        const assigneeName = req.body.assigneeName;
         const id_user = req.body.id_user;
-        const id_state = req.body.id_state;
+        const stateName = req.body.stateName;
 
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
+        const userController = new UserController(connection);
+        const stateController = new StateController(connection);
+
+        const test = null;
+        console.log(typeof test);
+        const assignee: User | null = await userController.getUserByName(assigneeName);
+        const id_state: State | null = await stateController.getStateByName(stateName);
+
+        if (assignee === undefined) {
+            res.status(400).end("L'user " + assigneeName + " que vous voulez assigné au ticket n'existe pas !")
+            return;
+        }
+        if (id_state === undefined) {
+            res.status(400).end("La state " + stateName + " n'existe pas !")
+            return;
+        }
 
         const ticket = await ticketController.updateTicket(ticketName, {
             name: name,
             description: description,
-            assignee: assignee,
+            assignee: assignee?.id,
             id_user: id_user,
-            id_state: id_state
+            id_state: id_state?.id
         });
         if (ticket === null) {
             res.status(404).end();
             return;
         } else if (typeof ticket === "string") {
-            res.status(400).send(ticket);
+            res.status(400).end(ticket);
             return;
         } else {
             res.status(200).end();
@@ -169,6 +186,7 @@ ticketRouter.post("/add", async function (req, res) {
     if (await isUserConnected(req)) {
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
+        const userController = new UserController(connection);
 
         const name = req.body.name;
         const description = req.body.description;
@@ -180,10 +198,15 @@ ticketRouter.post("/add", async function (req, res) {
             return;
         }
 
+        const assigneeId = await userController.getUserByName(assignee);
+        if (assigneeId === null) {
+            res.status(400).end("L'user assigné au ticket n'existe pas");
+        }
+
         const Ticket = await ticketController.createTicket({
             name: name,
             description: description,
-            assignee: assignee,
+            assignee: assigneeId?.id,
             id_user: id_user,
             id_state: id_state
         })

@@ -12,7 +12,7 @@ export async function isUserConnected(req: express.Request): Promise<boolean> {
             const session = await sessionController.getSessionByToken(token);
             if (session !== null) {
                 if (session.userId != null) {
-                    const user = await userController.getUserById(session.userId.toString());
+                    const user = await userController.getUserById(session.userId);
                     if (user !== null) {
                         return true;
                     }

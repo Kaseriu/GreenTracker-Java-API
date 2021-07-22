@@ -35,15 +35,15 @@ stateRouter.get("/", async function (req, res) {
 
 /**
  * Récupération des state par Id
- * URL : java-api/state/id
+ * URL : java-api/state/id/:id
  * Requête : GET
  */
-stateRouter.get("/id", async function (req, res) {
+stateRouter.get("/id/:id", async function (req, res) {
     if (await isUserConnected(req)) {
         const connection = await DatabaseUtils.getConnection();
         const stateController = new StateController(connection);
-        const stateId = req.body.stateId;
-        if (stateId === undefined || stateId === "") {
+        const stateId = Number(req.params.id);
+        if (stateId === undefined || stateId === null) {
             res.status(400).send('State Id is missing');
             return;
         }

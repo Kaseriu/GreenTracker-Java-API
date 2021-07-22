@@ -37,6 +37,10 @@ export class AuthController {
             return "Their is already an user associated to this email";
         }
 
+        if (await this.userController.getUserByName(options.name) !== null) {
+            return "Nom déjà prit !";
+        }
+
         const res = await this.connection.execute(`INSERT INTO user (name, email, password)
                                                    VALUES (?, ?, ?)`,
             [
@@ -59,10 +63,10 @@ export class AuthController {
     public async login(email: string, password: string): Promise<Session | string | null> {
         const user = await this.userController.getUserByEmail(email);
         if (user === null) {
-            return null;
+            return "Vos identifiants sont incorrects";
         }
         if (typeof user.password === "string" && !await compare(password, user.password)) {
-            return "Wrong email or password";
+            return "Vos identifiants sont incorrects";
         }
 
         const token = await hash(Date.now() + email, 5);

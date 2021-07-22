@@ -46,7 +46,7 @@ userRouter.get("/:id", async function (req, res) {
             res.status(400).send('User Id is missing');
             return;
         }
-        const user = await userController.getUserById(userId);
+        const user = await userController.getUserById(Number(userId));
         if (user === null) {
             res.status(404).send("This user doesn't exist");
             return;
