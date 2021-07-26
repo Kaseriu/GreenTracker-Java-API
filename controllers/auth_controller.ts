@@ -23,18 +23,31 @@ export class AuthController {
      */
     async createUser(options: IUserProps): Promise<User | null | string> {
 
-        if (options.name === undefined || options.email === undefined || options.password === undefined) {
-            return null;
+        if (options.name === undefined || options.name === "") {
+            return "Nom manquant";
+        }
+
+        if (options.email === undefined || options.email === "") {
+            return "Email manquant";
         }
 
         if (!EmailValidator.validate(options.email)) {
-            return "Wrong email format"
+            return "Mauvais format d'email";
+
+        }
+
+        if (options.password === undefined || options.password === ""){
+            return "Mot de passe manquant";
+        }
+
+        if (options.password.length < 8) {
+            return "Mot de passe trop court (8 caractères minimum)";
         }
 
         const passwordHashed = await hash(options.password, 5);
 
         if (await this.userController.getUserByEmail(options.email) !== null) {
-            return "Their is already an user associated to this email";
+            return "Un user est déjà associé à cette email";
         }
 
         if (await this.userController.getUserByName(options.name) !== null) {

@@ -183,7 +183,7 @@ export class TicketController {
         }
         if (options.assignee !== undefined && options.assignee !== null) {
             if (await user.getUserById(options.assignee) === null) {
-                return "L'user " + options.assignee + " n'existe pas !";
+                return "L'user " + options.assignee + " assignée au ticket n'existe pas !";
             }
             setClause.push("assignee = ?");
             params.push(options.assignee);
@@ -202,9 +202,7 @@ export class TicketController {
             setClause.push("id_state = ?");
             params.push(options.id_state);
         }
-        if (params.length === 0) {
-            return "Vous devez au moins renseigner un champs";
-        }
+
         params.push(ticketName);
         const res = await this.connection.execute(`UPDATE ticket
                                                    SET ${setClause.join(", ")}

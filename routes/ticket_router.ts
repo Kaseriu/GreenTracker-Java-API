@@ -112,23 +112,29 @@ ticketRouter.put("/:ticketName", async function (req, res) {
         const assigneeName = req.body.assigneeName;
         const id_user = req.body.id_user;
         const stateName = req.body.stateName;
+        let assignee: User | null = null;
+        let id_state: State | null = null;
+
 
         const connection = await DatabaseUtils.getConnection();
         const ticketController = new TicketController(connection);
         const userController = new UserController(connection);
         const stateController = new StateController(connection);
 
-        const test = null;
-        console.log(typeof test);
-        const assignee: User | null = await userController.getUserByName(assigneeName);
-        const id_state: State | null = await stateController.getStateByName(stateName);
 
-        if (assignee === undefined) {
-            res.status(400).end("L'user " + assigneeName + " que vous voulez assigné au ticket n'existe pas !")
+        if (assigneeName !== undefined) {
+            assignee = await userController.getUserByName(assigneeName);
+        }
+        if (stateName !== undefined) {
+            id_state = await stateController.getStateByName(stateName);
+        }
+
+        if (assignee === null && assigneeName !== undefined) {
+            res.status(400).send("L'user " + assigneeName + " assignée au ticket n'existe pas !");
             return;
         }
-        if (id_state === undefined) {
-            res.status(400).end("La state " + stateName + " n'existe pas !")
+        if (id_state === null && stateName !== undefined) {
+            res.status(400).send("L'état " + stateName + "n'existe pas !")
             return;
         }
 
@@ -140,14 +146,14 @@ ticketRouter.put("/:ticketName", async function (req, res) {
             id_state: id_state?.id
         });
         if (ticket === null) {
-            res.status(404).end();
+            res.status(304).end();
             return;
         } else if (typeof ticket === "string") {
-            res.status(400).end(ticket);
+            console.log(ticket)
+            res.status(400).send(ticket);
             return;
         } else {
-            res.status(200).end();
-            res.json(ticket);
+            res.status(200).send("Ticket modifié");
             return;
         }
     }
@@ -193,14 +199,25 @@ ticketRouter.post("/add", async function (req, res) {
         const assignee = req.body.assignee;
         const id_user = req.body.id_user;
         const id_state = req.body.id_state;
-        if (name === undefined || description === undefined || assignee === undefined || id_user === undefined || id_state === undefined) {
-            res.status(400).end("fields empty");
+
+        if (name === undefined || name === "") {
+            res.status(400).send("Nom manquant");
+            return;
+        }
+        if (description === undefined || description === "") {
+            res.status(400).send("Description manquante");
+            return;
+        }
+
+        if (assignee === "") {
+            res.status(400).send("User assigné manquant");
             return;
         }
 
         const assigneeId = await userController.getUserByName(assignee);
         if (assigneeId === null) {
-            res.status(400).end("L'user assigné au ticket n'existe pas");
+            res.status(400).send("L'user assigné au ticket n'existe pas");
+            return;
         }
 
         const Ticket = await ticketController.createTicket({
@@ -216,8 +233,7 @@ ticketRouter.post("/add", async function (req, res) {
         }
 
         if (Ticket !== null) {
-            res.status(201);
-            res.json(Ticket);
+            res.status(201).send("Ticket créé");
             return;
         } else {
             res.status(400).end();
