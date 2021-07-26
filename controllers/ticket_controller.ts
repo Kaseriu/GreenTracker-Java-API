@@ -68,7 +68,7 @@ export class TicketController {
     async getTicketByUserId(UserId: number): Promise<Ticket | any> {
         const res = await this.connection.query(`SELECT id, name, description, assignee, id_user, id_state
                                                  FROM ticket
-                                                 where id_user = ${UserId}`);
+                                                 where assignee = ${UserId}`);
         const data = res[0];
         if (Array.isArray(data)) {
             return (data as RowDataPacket[]).map(function (row: any) {
